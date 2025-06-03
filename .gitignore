@@ -1,0 +1,12 @@
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+*.o
+*.obj
+*.exe
+*.log
+.idea/
+*.user
+*.DS_Store
