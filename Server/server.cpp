@@ -21,17 +21,17 @@ int main() {
     // configuration for server address
     sockaddr_in server_addr {};
     server_addr.sin_family = IPv4;              // address type: IPv4
-    server_addr.sin_addr.s_addr = INADDR_ANY;   // interface: any (localhost, LAN, etc)
     server_addr.sin_port = htons(PORT); // port: 5555
+
 
     bind(server_socket, (SOCKADDR*)&server_addr, sizeof(server_addr));
 
-    // listening
+    // listen
     listen(server_socket, 5);
-    cout << "Listening at port 5555...\n";
+    cout << "Server start! Listening at port " << PORT << "...\n";
 
 
-    // accepting connection from client
+    // accept connection from client
     SOCKET client_socket;
     sockaddr_in client_addr {};
     int client_size = sizeof(client_addr);
@@ -42,7 +42,12 @@ int main() {
     // get data from client
     char buffer[1024] = {};
     recv(client_socket, buffer, sizeof(buffer), 0);
-    std::cout << "Recived: " << buffer << "\n";
+    std::cout << "Recived:\t" << buffer << "\n";
+
+    // response
+    const char* msg = "World!";
+    send(client_socket, msg, strlen(msg), 0);
+    cout << "Sended: \t" << msg << endl;
 
     closesocket(client_socket);
     closesocket(server_socket);

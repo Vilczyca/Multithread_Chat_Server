@@ -1,2 +1,6 @@
 add_executable(Client
-        main.cpp)
+        client.cpp)
+
+if (WIN32)
+    target_link_libraries(Client ws2_32)
+endif()
