@@ -89,8 +89,7 @@
 //     return 0;
 // }
 
-#include "../chat/mainwindow.h"
-// #include "../chat/userwidget.h"
+#include "mainwindow.h"
 #include "userwidget.h"
 
 #include <QApplication>
