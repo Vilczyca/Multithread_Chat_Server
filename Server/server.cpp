@@ -1,5 +1,6 @@
-#include <iostream>
 #include <winsock2.h>
+#include <iostream>
+
 #include <thread>
 #include <string>
 #include <mutex>
@@ -25,7 +26,12 @@ vector<Client> clients;
 mutex clients_mutex;
 
 // Check if username is already taken
+
 bool checkUsername(const string& username) {
+
+    if (username == "SERVER" || username == "ADMIN")
+        return  false;
+
     for (const Client& client : clients) {
         if (client.username == username) {
             return false;
@@ -36,61 +42,84 @@ bool checkUsername(const string& username) {
 
 
 // Broadcast to all clients except sender
-void sendToAll(const string& msg, SOCKET sender_socket) {
+
+void sendToAll(const string& msg) {
     lock_guard<mutex> lock(clients_mutex);
     for (const auto& client : clients) {
-        if (client.socket != sender_socket) {
-            send(client.socket, msg.c_str(), msg.length(), 0);
-        }
+        string finalMsg = "s ";
+        finalMsg.append(msg);
+        send(client.socket, finalMsg.c_str(), static_cast<int>(finalMsg.length()), 0);
     }
 }
 
-void sendToClient(const string& msg, SOCKET sender_socket, const string& username) {
+void sendToClient(const string& msg, SOCKET sender_socket,
+                  const string& username) {\
+                  bool foundUser = false;
     lock_guard<mutex> lock(clients_mutex);
-    bool foundUser = false;
     for (const auto& client : clients) {
         if (client.username == username) {
-            send(client.socket, msg.c_str(), (int)msg.length(), 0);
+            string finalMsg = "p ";
+            finalMsg.append(msg);
+            send(client.socket, finalMsg.c_str(), static_cast<int>(finalMsg.length()), 0);
+            send(sender_socket, finalMsg.c_str(), static_cast<int>(finalMsg.length()), 0);
+
             foundUser = true;
             break;
         }
     }
-    if(!foundUser) {
-        string errorMsg = "p SERVER Nie Udało dostarczyć się wiadomości :<";
-        send(sender_socket, errorMsg.c_str(), (int)errorMsg.length(), 0); }
+    if (!foundUser) {
+        string errorMsg =
+                "p [SERVER]: Nie udało dostarczyć się wiadomości :<";
+        send(sender_socket, errorMsg.c_str(),
+             static_cast<int>(errorMsg.length()), 0); }
 }
 
 // Handle individual client
 void handleClient(SOCKET client_socket) {
     char buffer[1024] = {};
     string username = "Anonymous";
+    string msg;
+    bool usernameAccepted = false;
 
-    // receive username
-    int received = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
-    if (received <= 0) {
-        closesocket(client_socket);
-        return;
-    }
-    buffer[received] = '\0';
-    username = buffer;
-    {
-        lock_guard<mutex> lock(clients_mutex);
-        if (!checkUsername(username)) {
-            string msg = ">>> Username already taken.\n";
-            send(client_socket, msg.c_str(), msg.size(), 0);
+    while (!usernameAccepted) {
+        int received = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+        if (received <= 0) {
             closesocket(client_socket);
             return;
         }
 
-        clients.push_back(Client{username, client_socket});
+        buffer[received] = '\0';
+        username = buffer;
+        {
+            lock_guard<mutex> lock(clients_mutex);
+            if (!checkUsername(username)) {
+                msg = "NOPE";
+                send(client_socket, msg.c_str(), static_cast<int>(msg.size()), 0);
+                continue;
+            }
+
+            clients.push_back(Client{username, client_socket});
+            usernameAccepted = true;
+            msg = "YUP";
+            send(client_socket, msg.c_str(), static_cast<int>(msg.size()), 0);
+        }
     }
-    cout << ">>> " << username << " joined the chat.\n";
-    sendToAll(">>> " + username + " joined the chat.\n", client_socket);
+
+    // receive username
+
+
+    msg = "[SERVER]: " + username + " dołącza do czatu! Hurra!\n";
+    cout << msg;
+    sendToAll(msg);
+    msg = "p [SERVER]: Dołączasz do serwera !";
+    send(client_socket,msg.c_str(),static_cast<int>(msg.size()), 0);
+
 
     while (true) {
         // recive message
         memset(buffer, 0, sizeof(buffer));
-        int bytes_received = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+        int bytes_received = recv(client_socket,
+                                  buffer, sizeof(buffer) - 1, 0);
 
         if (bytes_received <= 0) break;
 
@@ -98,34 +127,38 @@ void handleClient(SOCKET client_socket) {
         buffer[bytes_received] = '\0';
         string action = "/all";
         istringstream iss(buffer);
-        iss>> action;
+        iss >> action;
 
-        if(action == "/whisp") {
+        if (action == "/whisp") {
             string fromUser = "Anon";
-            string msg;
-            iss>>fromUser;
+            iss >> fromUser;
             getline(iss, msg);
-            string finalMsg = "p [" + username + "]:";
+            string finalMsg = "[" + username + "]:";
             finalMsg.append(msg);
-            sendToClient(finalMsg,client_socket,fromUser);
-        } else {
-            string msg = "s [" + username + "]: " + buffer;
+            sendToClient(finalMsg, client_socket, fromUser);
+        } else if (action == "/all") {
+            getline(iss, msg);
+            string finalMsg = "[" + username + "]:";
+            finalMsg.append(msg);
             cout << msg << endl;
-            sendToAll(msg, client_socket);
+            sendToAll(finalMsg);
+        } else if (action == "/exit") {
+            {
+                lock_guard<mutex> lock(clients_mutex);
+                clients.erase(remove_if(clients.begin(), clients.end(),
+                                        [&](const Client& c) {
+                                            return c.socket == client_socket;
+                                        }), clients.end());
+            }
+            msg = "[SERVER]: " + username + " poszedł sobie.\n";
+            cout << msg;
+            sendToAll(msg);
+            closesocket(client_socket);
+        } else {
+            msg = "p [SERVER] >>> Nieznane polecenie!";
+            send(client_socket, msg.c_str(), static_cast<int>(msg.size()), 0);
         }
     }
-
-    // client disconnected
-    {
-        lock_guard<mutex> lock(clients_mutex);
-        clients.erase(remove_if(clients.begin(), clients.end(),
-                                [&](const Client& c) { return c.socket == client_socket; }),
-                      clients.end());
-    }
-
-    cout << "<<< " << username << " disconnected.\n";
-    sendToAll("<<< " + username + " disconnected.\n", client_socket);
-    closesocket(client_socket);
 }
 
 int main() {
@@ -139,14 +172,24 @@ int main() {
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(PORT);
 
-    bind(server_socket, (SOCKADDR*)&server_addr, sizeof(server_addr));
+    int bindCode = bind(server_socket, (SOCKADDR*)&server_addr,
+                        sizeof(server_addr));
+
+    if (bindCode == SOCKET_ERROR)
+    {
+        cerr << "[Server socket error with code " << bindCode << endl;
+        closesocket(server_socket);
+        WSACleanup();
+        return 1;
+    }
     listen(server_socket, 5);
     cout << "[Server started on port " << PORT << "]" << endl;
 
     while (true) {
         sockaddr_in client_addr {};
         int client_size = sizeof(client_addr);
-        SOCKET client_socket = accept(server_socket, (SOCKADDR*)&client_addr, &client_size);
+        SOCKET client_socket = accept(
+                server_socket, (SOCKADDR*)&client_addr, &client_size);
 
         if (client_socket != INVALID_SOCKET) {
             thread t(handleClient, client_socket);
