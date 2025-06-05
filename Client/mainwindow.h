@@ -2,6 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <winsock2.h>
+#include <thread>
+#include <atomic>
+
+#pragma comment(lib, "ws2_32.lib")
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -31,7 +38,12 @@ private slots:
 
 private:
     QString username;
+    SOCKET s;
+
     Ui::MainWindow *ui;
+    std::thread recvThread;
+    std::atomic<bool> running;
+    void receiveLoop(); // funkcja do odbierania w tle
 };
 
 #endif // MAINWINDOW_H

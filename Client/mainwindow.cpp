@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <iostream>
+
+using namespace std;
 
 QString colorMsgMe = "#DB8DD0";
 QString colorMsgOthers = "#FEC5F6";
@@ -14,15 +17,62 @@ MainWindow::MainWindow(const QString &username, QWidget *parent)
     ui->setupUi(this);
     usernamee=username;
     ui->list_users->addItem("[Ty] "+ username);
+
+    this->username = username;
+    running = true;
+
+    // Inicjalizacja Winsock
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        // QMessageBox::critical(this, "Błąd", "WSAStartup nieudane.");
+        std::cout << "WSAStartup nieudane." << endl;
+        exit(1);
+    }
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s == INVALID_SOCKET) {
+        // QMessageBox::critical(this, "Błąd", "Nie udało się utworzyć gniazda.");
+        std::cout << "Nie udało się utworzyć gniazda." << endl;
+        WSACleanup();
+        exit(1);
+    }
+
+    sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(5555);
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    if (::connect(s, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) != 0) {
+        // QMessageBox::critical(this, "Błąd", "Połączenie z serwerem nieudane.");
+        std::cout << "Połączenie z serwerem nieudane." << endl;
+        closesocket(s);
+        WSACleanup();
+        exit(1);
+    }
+
+    send(s, username.toUtf8().constData(), username.length(), 0);
+
+    // Start receiver thread
+    recvThread = std::thread(&MainWindow::receiveLoop, this);
+
 }
 
 MainWindow::~MainWindow()
 {
+    running = false;
+    if (recvThread.joinable())
+        recvThread.join();
+    shutdown(s, SD_BOTH);
+    closesocket(s);
+    WSACleanup();
     delete ui;
 }
 
 void MainWindow::sendFromMe() {
     QString message=ui->lineedit_message->text();
+    if (message == "") {
+        return;
+    }
+
     ui->lineedit_message->setText("");
     QString username=usernamee;
 
@@ -153,3 +203,6 @@ void MainWindow::on_pushButton_5_clicked()
     sendFromWisper();
 }
 
+
+// TODO:
+// - Wyślij z enter

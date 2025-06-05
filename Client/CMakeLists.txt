@@ -1,4 +1,4 @@
-set(CMAKE_PREFIX_PATH "C:/Qt/6.9.1/mingw_64/lib/cmake")
+#set(CMAKE_PREFIX_PATH "C:/Qt/6.9.1/mingw_64/lib/cmake")
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -12,7 +12,6 @@ set(CHAT_SOURCES
         userwidget.cpp
         userwidget.h
         userwidget.ui
-        # Remove duplicates - userwidget files are listed twice
 )
 
 # Combine all source files for the executable
