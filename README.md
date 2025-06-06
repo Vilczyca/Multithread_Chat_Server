@@ -72,12 +72,12 @@ g++ -std=c++20 -o client client.cpp -lpthread
 #### Uruchomienie programu  
 1. **Serwer**:  
    ```cmd
-   Server.exe  
+   {Path_to_file}\Server.exe  
    ```  
 
 2. **Klient**:  
    ```cmd
-   Client.exe  
+   {Path_to_file}\Client.exe  
    ```  
 
 3. Parametry konfiguracyjne (modyfikacja w kodzie):
