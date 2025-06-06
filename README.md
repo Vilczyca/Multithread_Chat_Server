@@ -39,11 +39,12 @@ Sekcje krytyczne występują, gdy wiele wątków próbuje jednocześnie modyfiko
 - MinGW 14.2 lub nowszy.  
 
 ### Jak uruchomić:  
+#### GUI
 Należy przejść do folderu `cmake-build-release/Server` i uruchomić program `Server.exe`. Program nie potrzebuje żadnych dodatkowych argumentów. Następnie, należy cofnąć się do folderu wstecz i przejść do folderu `Client`. 
 Z tego miejsca należy uruchomić aplikację klienta chatu (`Client.exe`). 
 Konieczne jest upewnienie się, że aplikacja Server.exe została wcześniej uruchomiona!
 
-CMD
+#### CMD
 Należy otworzyć okno konsoli / wiersza poleceń, a następnie przejść do lokalizacji w której znajduje się plik `Server.exe`. W ramach polecenia wywołującego należy podać nazwę pliku. Przykład wywołania poniżej:
 ```cmd
 C:\{Path_to_file}> Server.exe 
@@ -69,7 +70,7 @@ g++ -std=c++20 -o server.exe server.cpp -lws2_32
 g++ -std=c++20 -o client client.cpp -lpthread  
 ```  
 
-#### Uruchomienie programu  
+#### Uruchomienie programu z poziomu cmd  
 1. **Serwer**:  
    ```cmd
    {Path_to_file}\Server.exe  
