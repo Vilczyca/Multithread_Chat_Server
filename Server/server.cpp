@@ -215,6 +215,7 @@ void commandListener() {
     }
 }
 
+
 int main() {
     if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
         std::cerr << ">>> Error setting console handler" << std::endl;
