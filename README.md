@@ -45,12 +45,26 @@ Z tego miejsca należy uruchomić aplikację klienta chatu (`Client.exe`).
 Konieczne jest upewnienie się, że aplikacja Server.exe została wcześniej uruchomiona!
 
 #### CMD
-Należy otworzyć okno konsoli / wiersza poleceń, a następnie przejść do lokalizacji w której znajduje się plik `Server.exe`. W ramach polecenia wywołującego należy podać nazwę pliku. Przykład wywołania poniżej:
-```cmd
-C:\{Path_to_file}> Server.exe 
-```
+Należy otworzyć okno konsoli / wiersza poleceń, a następnie przejść do lokalizacji w której znajduje się plik `Server.exe`. W ramach polecenia wywołującego należy podać nazwę pliku. 
 Następnie należy cofnąć się do folderu nadrzędnego i przejść do folderu `Client`. Tam analogicznie wywołujemy program `Client.exe`.
 
+##### Uruchomienie programu z poziomu cmd  
+1. **Serwer**:  
+   ```cmd
+   {Path_to_file}\Server.exe  
+   ```  
+
+2. **Klient**:  
+   ```cmd
+   {Path_to_file}\Client.exe  
+   ```  
+
+3. Parametry konfiguracyjne (modyfikacja w kodzie):
+   ```cpp
+   const int PORT = 5555;
+   ```
+
+### Edycja / kompilacja: 
 W celu edycji / kompilacji programów sugerowanym sposobem jest użycie IDE mające zintegrowany kompilator C++, takich jak:
 - Visual Studio
 - CLion
@@ -70,21 +84,7 @@ g++ -std=c++20 -o server.exe server.cpp -lws2_32
 g++ -std=c++20 -o client client.cpp -lpthread  
 ```  
 
-#### Uruchomienie programu z poziomu cmd  
-1. **Serwer**:  
-   ```cmd
-   {Path_to_file}\Server.exe  
-   ```  
 
-2. **Klient**:  
-   ```cmd
-   {Path_to_file}\Client.exe  
-   ```  
-
-3. Parametry konfiguracyjne (modyfikacja w kodzie):
-   ```cpp
-   const int PORT = 5555;
-   ```
 ## Informacje dotyczące działania i komunikacji w aplikacji 
 ### Protokół komunikacyjny
 Serwer używa prostego protokołu tekstowego z prefixami:
