@@ -29,9 +29,14 @@ Sekcje krytyczne występują, gdy wiele wątków próbuje jednocześnie modyfiko
 - **Kolejki wiadomości** – wiadomości są buforowane i przetwarzane w sposób sekwencyjny, aby uniknąć wyścigów.  
 - **Flagi atomowe** - bezpieczne zarządzanie stanem serwera bez ryzyka blokady / wyścigu.
 
+## Diagram Architektury Systemu
+
+![diag_arch2](https://github.com/user-attachments/assets/996abbb7-ec06-41bb-952f-5c290b536ab1)
+
 ## Instrukcja uruchamiania projektu  
 
-### Wymagania  
+### Wymagania 
+
 - Kompilator C++ (np. g++, clang)  
 - Standard C++ 20 lub nowszy  
 - System operacyjny: Windows (WinSock 2.2)
@@ -82,8 +87,7 @@ cd Multithred_Chat_Server
 ```cmd
 g++ -std=c++20 -o server.exe server.cpp -lws2_32 
 g++ -std=c++20 -o client client.cpp -lpthread  
-```  
-
+```
 
 ## Informacje dotyczące działania i komunikacji w aplikacji 
 ### Protokół komunikacyjny
