@@ -1,4 +1,5 @@
 set(CMAKE_PREFIX_PATH "C:/Qt/6.9.1/mingw_64/lib/cmake")
+#set(CMAKE_PREFIX_PATH "D:/Qt/6.9.1/mingw_64/lib/cmake")
 
 cmake_minimum_required(VERSION 3.28.1)
 project(Multithread_Chat_Server LANGUAGES CXX)

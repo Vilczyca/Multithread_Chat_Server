@@ -8,6 +8,10 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
+#include <QMessageBox>
+#include <iostream>
+
+using namespace std;
 
 
 QT_BEGIN_NAMESPACE
@@ -21,23 +25,20 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(const QString &username, QWidget *parent = nullptr);
+    explicit MainWindow(const QString& username, SOCKET socket, const QStringList& users, QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
-    void sendFromMe();
-    void sendFromOther();
-    void sendFromWisper();
-
-
+    void sendAll(QString message);
+    void sendPriv(QString user, QString message);
+    void recvFromOther(QString user, QString message);
+    void recvFromWisper(QString user, QString message);
+    void recvFromServer(QString message);
     void on_button_send_message_clicked();
-
-    void on_pushButton_4_clicked();
-
-    void on_pushButton_5_clicked();
 
 private:
     QString username;
+    QStringList userList;
     SOCKET s;
 
     Ui::MainWindow *ui;

@@ -98,19 +98,33 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    UsernameDialog usernameDialog;
+    WSADATA wsaData;
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_in serverAddr {};
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(5555);
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    if (connect(sock, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+        qCritical("Połączenie z serwerem nieudane");
+        cerr << "Połączenie z serwerem nieudane" << endl;
+        return -1;
+    }
+
+    UsernameDialog usernameDialog(sock);
     if (usernameDialog.exec() == QDialog::Accepted) {
         QString username = usernameDialog.getUsername();
+        QStringList userList = usernameDialog.getUserList();
 
-        // Tworzymy i przekazujemy username do MainWindow
-        MainWindow mainWindow(username);
+        MainWindow mainWindow(username, sock, userList);
         mainWindow.show();
 
         return app.exec();
     }
 
+    closesocket(sock);
+    WSACleanup();
     return 0;
-    // MainWindow w;
-    // w.show();
-    // return a.exec();
 }
